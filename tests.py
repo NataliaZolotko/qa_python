@@ -50,12 +50,17 @@ class TestBooksCollector:
         collector = BooksCollector()
         collector.add_new_book('Голый пистолет')
         collector.set_book_genre('Голый пистолет', 'Комедия')
-        assert collector.get_book_genre('Голый пистолет') == 'Комедия'
+        genre = collector.books_genres['Голый пистолет']
+        assert genre == 'Комедия'
 
     #проверяем, что можем вывести список с определенны жанром
     @pytest.mark.parametrize('genre,name',[('Комедия',['Голый пистолет']),('Ужасы',['Оно'])])
     def test_get_books_with_specific_genre(genre,name):
         collector = BooksCollector()
+        collector.add_new_book('Голый пистолет')
+        collector.set_book_genre('Голый пистолет', 'Комедия')
+        collector.add_new_book('Оно')
+        collector.set_book_genre('Оно', 'Ужасы')
         assert collector.get_books_with_specific_genre(genre) == name
 
     # проверяем, что можем получить словарь books_genre
@@ -66,10 +71,7 @@ class TestBooksCollector:
         collector.add_new_book('Голый пистолет')
         collector.set_book_genre('Голый пистолет', 'Комедия')
         books_genre = collector.get_books_genre()
-        assert 'Заклятие' in books_genre
-        assert books_genre['Заклятие'] == 'Ужасы'
-        assert 'Голый пистолет' in books_genre
-        assert books_genre['Голый пистолет'] == 'Комедия'
+        assert books_genre == {'Заклятие': 'Ужасы', 'Голый пистолет': 'Комедия'}
     
     #проверяем, что можем вернуть книги, подходящие детям
     @pytest.mark.parametrize('name,genre', [('Моана', 'Мультфильм'),('Заклятие','Ужасы')])
@@ -77,15 +79,14 @@ class TestBooksCollector:
         collector = BooksCollector()
         collector.add_new_book(name)
         collector.set_book_genre(name, genre)
-        collector.genre_age_rating = {'Ужасы':'18+', 'Детективы': '16+'}
+        age_rating = collector.genre_age_rating(genre)
         books_for_children = collector.get_books_for_children()
-        assert name in books_for_children if genre not in collector.genre_age_rating else name not in books_for_children
+        assert name in books_for_children if genre not in age_rating else name not in books_for_children
 
     #проверяем, что можем добавить книгу в избранное     
     def test_add_book_in_favorites():
         collector = BooksCollector()
         collector.add_new_book('Сказка')
-        collector.set_book_genre('Сказка', 'Мультфильм')
         collector.add_book_in_favorites('Сказка')
         assert 'Сказка' in collector.get_list_of_favorites_books()
 
